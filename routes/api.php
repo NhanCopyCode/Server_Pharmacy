@@ -17,6 +17,7 @@ use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\OrderItemController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\PromotionController;
+use App\Http\Controllers\Api\VideoController;
 use App\Http\Controllers\Api\VoucherController;
 use App\Models\ProductImage;
 
@@ -60,6 +61,7 @@ Route::middleware(['auth:api', 'role:admin'])->group(function () {
 
     Route::apiResource('brands', BrandController::class);
     Route::apiResource('ads', AdvertisementController::class);
+    Route::apiResource('videos', VideoController::class);
     Route::apiResource('categories', CategoryController::class);
     Route::apiResource('product-images', ProductImageController::class);
     Route::apiResource('products', ProductController::class);
