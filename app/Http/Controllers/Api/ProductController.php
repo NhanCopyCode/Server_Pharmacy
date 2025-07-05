@@ -62,4 +62,42 @@ class ProductController extends Controller
         $product->delete();
         return response()->json(['message' => 'Deleted successfully'], 204);
     }
+
+    public function import(Request $request)
+    {
+        $data = $request->input('data');
+
+        if (!is_array($data)) {
+            return response()->json(['error' => 'Invalid data format'], 400);
+        }
+
+        $importedCount = 0;
+        $errors = [];
+
+        foreach ($data as $index => $row) {
+            try {
+                Product::create([
+                    'title' => $row['title'] ?? 'Không tiêu đề',
+                    'description' => $row['description'] ?? '',
+                    'inventory' => $row['inventory'] ?? 0,
+                    'categoryId' => $row['categoryId'] ?? null,
+                    'price' => $row['price'] ?? 0,
+                    'brandId' => $row['brandId'] ?? null,
+                    'outstanding' => $row['outstanding'] ?? 0,
+                    'approved' => $row['approved'] ?? 0,
+                ]);
+                $importedCount++;
+            } catch (\Exception $e) {
+                $errors[] = [
+                    'row' => $index + 1,
+                    'message' => $e->getMessage()
+                ];
+            }
+        }
+
+        return response()->json([
+            'message' => "Đã import {$importedCount} sản phẩm thành công.",
+            'errors' => $errors
+        ]);
+    }
 }

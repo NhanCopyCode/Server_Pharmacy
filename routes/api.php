@@ -59,6 +59,9 @@ Route::middleware(['auth:api', 'role:admin'])->group(function () {
     Route::post('/product-images/deleteAllImagesByProductId', [ProductImageController::class, 'deleteAllProductImagesByProductId']);
     Route::post('/product-images/update-by-product-id', [ProductImageController::class, 'updateImagesForProduct']);
 
+    // Excel upload
+    Route::post('/products/import', [ProductController::class, 'import']);
+
     Route::apiResource('brands', BrandController::class);
     Route::apiResource('ads', AdvertisementController::class);
     Route::apiResource('videos', VideoController::class);
