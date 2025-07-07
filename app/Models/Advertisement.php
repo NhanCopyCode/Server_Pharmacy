@@ -15,7 +15,9 @@ class Advertisement extends Model
     protected $fillable = [
         'title',
         'image',
-        'approved'
+        'approved',
+        'start_date',
+        'end_date',
     ];
 
     public $timestamps = true;
