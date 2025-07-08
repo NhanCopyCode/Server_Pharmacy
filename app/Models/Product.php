@@ -19,7 +19,8 @@ class Product extends Model
         'price',
         'brandId',
         'outstanding',
-        'approved'
+        'approved',
+        'main_image',
     ];
 
     public $timestamps = true;

@@ -8,6 +8,7 @@ use App\Http\Requests\UpdateProductRequest;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use App\Http\Resources\ProductResource;
+use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
@@ -36,9 +37,49 @@ class ProductController extends Controller
     }
 
 
+    public function search(Request $request)
+    {
+        $input = $request->query('q');
+
+        $query = Product::where('title', 'like', '%' . $input . '%')
+            ->where('approved', 1);
+
+        $productsCount = $query->count();
+        $listProducts = $query->limit(4)->get();
+
+        return response()->json([
+            'listProducts' => $listProducts,
+            'productsCount' => $productsCount
+        ]);
+    }
+
+    public function searchMultipleProducts(Request $request)
+    {
+        $input = $request->query('q');
+
+        $query = Product::where('title', 'like', '%' . $input . '%')
+            ->where('approved', 1);
+
+        $productsCount = $query->count();
+        $listProducts = $query->limit(30)->get();
+
+        return response()->json([
+            'listProducts' => $listProducts,
+            'productsCount' => $productsCount
+        ]);
+    }
+
     public function store(StoreProductRequest $request)
     {
-        $product = Product::create($request->validated());
+        $data = $request->validated();
+
+        if ($request->hasFile('main_image')) {
+            $path = $request->file('main_image')->store('products', 'public');
+            $$data['main_image'] = asset('storage/' . $path);
+        }
+
+        $product = Product::create($data);
+
         return new ProductResource($product);
     }
 
@@ -52,14 +93,35 @@ class ProductController extends Controller
     public function update(UpdateProductRequest $request, $id)
     {
         $product = Product::findOrFail($id);
-        $product->update($request->validated());
+        $data = $request->validated();
+
+        if ($request->hasFile('main_image')) {
+            if ($product->main_image) {
+                $oldPath = str_replace('storage/', '', $product->main_image);
+                Storage::disk('public')->delete($oldPath);
+            }
+
+            $path = $request->file('main_image')->store('products', 'public');
+            $data['main_image'] = asset('storage/' . $path);
+        }
+
+        $product->update($data);
+
         return new ProductResource($product);
     }
+
 
     public function destroy($id)
     {
         $product = Product::findOrFail($id);
+
+        if ($product->main_image) {
+            $oldPath = str_replace('storage/', '', $product->main_image);
+            Storage::disk('public')->delete($oldPath);
+        }
+
         $product->delete();
+
         return response()->json(['message' => 'Deleted successfully'], 204);
     }
 

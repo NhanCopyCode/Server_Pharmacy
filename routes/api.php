@@ -44,6 +44,13 @@ Route::post('/me', [AuthController::class, 'me']);
 
 Route::post('/ai/generate-description', [AiController::class, 'generateDescription']);
 
+// Product
+Route::get('/products/search', [ProductController::class, 'search']);
+Route::get('/products/search-multiple-products', [ProductController::class, 'searchMultipleProducts']);
+
+//Post
+Route::get('/posts/search', [PostController::class, 'search']);
+Route::get('/products/search-multiple-posts', [PostController::class, 'searchMultiplePosts']);
 
 // API Resources
 Route::middleware(['auth:api', 'role:admin'])->group(function () {
@@ -61,6 +68,8 @@ Route::middleware(['auth:api', 'role:admin'])->group(function () {
 
     // Excel upload
     Route::post('/products/import', [ProductController::class, 'import']);
+
+ 
 
     Route::apiResource('brands', BrandController::class);
     Route::apiResource('ads', AdvertisementController::class);

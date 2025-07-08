@@ -33,6 +33,8 @@ class UpdateProductRequest extends FormRequest
             'price' => 'sometimes|required|numeric|min:0',
             'approved' => 'boolean',
             'outstanding' => 'boolean',
+            'main_image' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+
         ];
     }
 
@@ -58,6 +60,10 @@ class UpdateProductRequest extends FormRequest
 
             'approved.boolean' => 'Trạng thái phê duyệt phải là đúng hoặc sai (true/false).',
             'outstanding.boolean' => 'Trạng thái phê duyệt phải là đúng hoặc sai (true/false).',
+
+            'main_image.image' => 'Hình ảnh chính phải là một tệp hình ảnh.',
+            'main_image.mimes' => 'Hình ảnh chính phải có định dạng: jpeg, png, jpg, gif, hoặc webp.',
+            'main_image.max' => 'Kích thước hình ảnh chính không được vượt quá 2MB.',
         ];
     }
 }

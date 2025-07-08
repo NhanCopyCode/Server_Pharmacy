@@ -18,6 +18,7 @@ class StorePostRequest extends FormRequest
             'description' => 'required|string',
             'approved' => 'nullable|boolean',
             'userId' => 'required|exists:users,id',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         ];
     }
 
@@ -35,6 +36,10 @@ class StorePostRequest extends FormRequest
             'userId.exists' => 'Người dùng không tồn tại trong hệ thống.',
 
             'approved.boolean' => 'Trạng thái duyệt phải là true hoặc false.',
+
+            'image.image' => 'Tệp tải lên phải là ảnh.',
+            'image.mimes' => 'Ảnh phải có định dạng: jpeg, png, jpg, gif, webp.',
+            'image.max' => 'Ảnh không được vượt quá 2MB.',
 
         ];
     }
