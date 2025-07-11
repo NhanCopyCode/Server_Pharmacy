@@ -22,7 +22,7 @@ class BrandController extends Controller
             // ->orWhere('description', 'like', '%' . $search . '%');
         }
 
-        $brands = $query->paginate(10);
+        $brands = $query->latest()->paginate(10);
         return BrandResource::collection($brands);
     }
 
@@ -41,7 +41,7 @@ class BrandController extends Controller
     }
 
 
-    public function selectBrandsNotDeleted(Request $request) 
+    public function selectBrandsNotDeleted(Request $request)
     {
         $brands = Brand::whereNull('deleted_at')->get()->map(function ($brand) {
             return [

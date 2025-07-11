@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\AiController;
 use App\Http\Controllers\Api\AdvertisementController;
+use App\Http\Controllers\Api\BannerController;
+use App\Http\Controllers\Api\BannerPositionController;
 use App\Http\Controllers\Auth\AuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -47,10 +49,19 @@ Route::post('/ai/generate-description', [AiController::class, 'generateDescripti
 // Product
 Route::get('/products/search', [ProductController::class, 'search']);
 Route::get('/products/search-multiple-products', [ProductController::class, 'searchMultipleProducts']);
+Route::get('/products/latest', [ProductController::class, 'getLatest']);
+
 
 //Post
 Route::get('/posts/search', [PostController::class, 'search']);
-Route::get('/products/search-multiple-posts', [PostController::class, 'searchMultiplePosts']);
+Route::get('/posts/search-multiple-posts', [PostController::class, 'searchMultiplePosts']);
+
+//Voucher
+Route::get('/vouchers/getListApproved', [VoucherController::class, 'getListApproved']);
+
+//Category
+Route::get('/categories/getListApproved', [CategoryController::class, 'getListApproved']);
+Route::get('/categories/getListOutstanding', [CategoryController::class, 'getListOutstanding']);
 
 // API Resources
 Route::middleware(['auth:api', 'role:admin'])->group(function () {
@@ -69,7 +80,11 @@ Route::middleware(['auth:api', 'role:admin'])->group(function () {
     // Excel upload
     Route::post('/products/import', [ProductController::class, 'import']);
 
- 
+    // Banner positions
+    Route::get('/banner-positions/banner-positions-select', [BannerPositionController::class, 'selectPositions']);
+
+
+
 
     Route::apiResource('brands', BrandController::class);
     Route::apiResource('ads', AdvertisementController::class);
@@ -85,6 +100,9 @@ Route::middleware(['auth:api', 'role:admin'])->group(function () {
     Route::apiResource('payments', PaymentController::class);
     Route::apiResource('promotions', PromotionController::class);
     Route::apiResource('vouchers', VoucherController::class);
-    
+    Route::apiResource('banners', BannerController::class);
+    Route::apiResource('banner-positions', BannerPositionController::class);
+
+
     Route::post('/editor-upload', [EditorController::class, 'upload']);
 });

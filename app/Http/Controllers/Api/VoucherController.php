@@ -21,7 +21,7 @@ class VoucherController extends Controller
                 ->orWhere('description', 'like', '%' . $search . '%');
         }
 
-        $vouchers = $query->paginate(10);
+        $vouchers = $query->latest()->paginate(10);
         return VoucherResource::collection($vouchers);
     }
 
@@ -33,6 +33,13 @@ class VoucherController extends Controller
                 'label' => $voucher->code,
             ];
         });
+
+        return response()->json($vouchers);
+    }
+
+    public function getListApproved()
+    {
+        $vouchers = Voucher::where('approved', 1)->get();
 
         return response()->json($vouchers);
     }

@@ -29,7 +29,7 @@ class CategoryController extends Controller
             $query->where('parentId', 0);
         }
 
-        $parents = $query->with('children')->paginate(10);
+        $parents = $query->with('children')->latest()->paginate(10);
 
         $listParents = Category::where('parentId', 0)->get()->map(function ($parent) {
             return [
@@ -81,6 +81,23 @@ class CategoryController extends Controller
         ]);
     }
 
+    public function getListApproved()
+    {
+        $categories = Category::where('approved', 1)->get();
+
+        return response()->json($categories);
+    }
+
+    public function getListOutstanding()
+    {
+        $categories = Category::where('outstanding', 1)
+            ->where('approved', 1)
+            ->get();
+
+        return response()->json($categories);
+    }
+
+
 
     public function getParents(Request $request)
     {
@@ -96,10 +113,10 @@ class CategoryController extends Controller
         return response()->json($parentsObject);
     }
 
-    public function getChildNotDeleted(Request $request) 
+    public function getChildNotDeleted(Request $request)
     {
         $parents = Category::where('parentId', '!=',  0)
-            ->whereNull('deleted_at') 
+            ->whereNull('deleted_at')
             ->get();
 
         $parentsObject = $parents->map(function ($parent) {
@@ -112,13 +129,13 @@ class CategoryController extends Controller
         return response()->json($parentsObject);
     }
 
-    public function getChild(Request $request) 
+    public function getChild(Request $request)
     {
         $child = Category::where('parentId', '!=', 0)->get();
 
-        $childObject  = $child->map(function($childItem) {
+        $childObject  = $child->map(function ($childItem) {
             return [
-                'value' =>$childItem->id,
+                'value' => $childItem->id,
                 'label' => $childItem->name
             ];
         });

@@ -20,7 +20,7 @@ class PostController extends Controller
             $query->where('title', 'like', '%' . $search . '%');
         }
 
-        $posts = $query->with('user')->paginate(10);
+        $posts = $query->with('user')->latest()->paginate(10);
         return PostResource::collection($posts);
     }
     public function search(Request $request)
@@ -41,18 +41,19 @@ class PostController extends Controller
     public function searchMultiplePosts(Request $request)
     {
         $input = $request->query('q');
+        $perPage = 30;
 
-        $query = Post::where('title', 'like', '%' . $input . '%')
-            ->where('approved', 1);
+        $query = Post::where('title', 'like', '%' . $input . '%');
 
-        $postsCount = $query->count();
-        $listPosts = $query->limit(30)->get();
+        $paginated = $query->paginate($perPage)->withQueryString();
 
         return response()->json([
-            'listPosts' => $listPosts,
-            'postsCount' => $postsCount
+            'listPosts' => $paginated->items(),
+            'postsCount' => $paginated->total(),
+            'meta' => $paginated->toArray(),
         ]);
     }
+
 
     public function getListPosts()
     {

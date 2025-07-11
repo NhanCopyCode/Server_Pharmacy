@@ -9,6 +9,10 @@ use App\Models\Product;
 use Illuminate\Http\Request;
 use App\Http\Resources\ProductResource;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Worksheet\MemoryDrawing;
+use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 
 class ProductController extends Controller
 {
@@ -31,11 +35,20 @@ class ProductController extends Controller
             $query->where('categoryId', $request->input('categoryId'));
         }
 
-        $products = $query->paginate(10);
+        $products = $query->latest()->paginate(10);
 
         return ProductResource::collection($products);
     }
 
+    public function getLatest()
+    {
+        $products = Product::where('approved', 1)
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get();
+
+        return ProductResource::collection($products);
+    }
 
     public function search(Request $request)
     {
@@ -56,16 +69,17 @@ class ProductController extends Controller
     public function searchMultipleProducts(Request $request)
     {
         $input = $request->query('q');
+        $perPage = 30;
 
         $query = Product::where('title', 'like', '%' . $input . '%')
             ->where('approved', 1);
 
-        $productsCount = $query->count();
-        $listProducts = $query->limit(30)->get();
+        $paginated = $query->paginate($perPage)->withQueryString();
 
         return response()->json([
-            'listProducts' => $listProducts,
-            'productsCount' => $productsCount
+            'listProducts' => $paginated->items(),
+            'productsCount' => $paginated->total(),
+            'meta' => $paginated->toArray(),
         ]);
     }
 
@@ -75,7 +89,7 @@ class ProductController extends Controller
 
         if ($request->hasFile('main_image')) {
             $path = $request->file('main_image')->store('products', 'public');
-            $$data['main_image'] = asset('storage/' . $path);
+            $data['main_image'] = asset('storage/' . $path);
         }
 
         $product = Product::create($data);
@@ -127,27 +141,60 @@ class ProductController extends Controller
 
     public function import(Request $request)
     {
-        $data = $request->input('data');
+        $request->validate([
+            'file' => 'required|file|mimes:xlsx,xls',
+        ]);
 
-        if (!is_array($data)) {
-            return response()->json(['error' => 'Invalid data format'], 400);
+        $spreadsheet = IOFactory::load($request->file('file')->getRealPath());
+        $sheet = $spreadsheet->getActiveSheet();
+        $rows = $sheet->toArray();
+
+        $drawings = $sheet->getDrawingCollection();
+        $imageMap = [];
+
+        foreach ($drawings as $drawing) {
+            $coords = $drawing->getCoordinates(); // ví dụ "H6"
+            preg_match('/[A-Z]+(\d+)/', $coords, $matches);
+            $rowIndex = (int)$matches[1];
+
+            if ($drawing instanceof MemoryDrawing) {
+                ob_start();
+                call_user_func(
+                    $drawing->getRenderingFunction(),
+                    $drawing->getImageResource()
+                );
+                $imageData = ob_get_clean();
+                $extension = 'jpg';
+            } else {
+                $imageData = file_get_contents($drawing->getPath());
+                $extension = pathinfo($drawing->getPath(), PATHINFO_EXTENSION);
+            }
+
+            $filename = 'products/' . Str::uuid() . '.' . $extension;
+            Storage::disk('public')->put($filename, $imageData);
+            $imageMap[$rowIndex] = $filename;
         }
 
         $importedCount = 0;
         $errors = [];
 
-        foreach ($data as $index => $row) {
+        foreach ($rows as $index => $row) {
+            if ($index === 0) continue;
+
             try {
                 Product::create([
-                    'title' => $row['title'] ?? 'Không tiêu đề',
-                    'description' => $row['description'] ?? '',
-                    'inventory' => $row['inventory'] ?? 0,
-                    'categoryId' => $row['categoryId'] ?? null,
-                    'price' => $row['price'] ?? 0,
-                    'brandId' => $row['brandId'] ?? null,
-                    'outstanding' => $row['outstanding'] ?? 0,
-                    'approved' => $row['approved'] ?? 0,
+                    'title' => $row[0] ?? 'Không tiêu đề',
+                    'description' => $row[1] ?? '',
+                    'inventory' => $row[2] ?? 0,
+                    'categoryId' => $row[3] ?? null,
+                    'price' => $row[4] ?? 0,
+                    'brandId' => $row[5] ?? null,
+                    'outstanding' => $row[6] ?? 0,
+                    'approved' => $row[10] ?? 0,
+                    'main_image' => isset($imageMap[$index + 1]) ? 'storage/' . $imageMap[$index + 1] : null,
                 ]);
+
+
                 $importedCount++;
             } catch (\Exception $e) {
                 $errors[] = [

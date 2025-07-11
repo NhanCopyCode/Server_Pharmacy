@@ -5,111 +5,16 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tymon\JWTAuth\Exceptions\TokenExpiredException;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AuthController extends Controller
 {
-
-    // public function refresh(Request $request)
-    // {
-    //     $refreshToken = $request->cookie('refresh_token');
-
-    //     if (!$refreshToken) {
-    //         return response()->json(['error' => 'Không tồn tại refresh token'], 401);
-    //     }
-
-    //     // Tìm user theo refresh_token (đã hash)
-    //     $user = User::where('refresh_token', hash('sha256', $refreshToken))->first();
-
-    //     if (!$user) {
-    //         return response()->json(['error' => 'Refresh token không hợp lệ'], 401);
-    //     }
-
-    //     // Đăng nhập user
-    //     $newAccessToken = auth()->login($user);
-
-    //     // Rotate refresh token
-    //     $newRefreshToken = Str::random(60);
-    //     $user->refresh_token = hash('sha256', $newRefreshToken);
-    //     $user->save();
-
-    //     return response()
-    //         ->json([
-    //             'access_token' => $newAccessToken,
-    //             'token_type' => 'bearer',
-    //             'expires_in' => auth()->factory()->getTTL() * 60,
-    //         ])
-    //         ->cookie('refresh_token', $newRefreshToken, 60 * 24 * 7, '/', null, false, true, false, 'Lax');
-
-
-    // }
-
-
-    // public function login(Request $request)
-    // {
-    //     $credentials = $request->only('email', 'password');
-
-    //     if (!$token = auth()->attempt($credentials)) {
-    //         return response()->json(['error' => 'Unauthorized'], 401);
-    //     }
-
-    //     $user = auth()->user();
-    //     $refreshToken = Str::random(60);
-    //     $user->refresh_token = hash('sha256', $refreshToken);
-    //     $user->save();
-
-    //     return response()
-    //         ->json([
-    //             'user' => $user,
-    //             'access_token' => $token,
-    //             'token_type' => 'bearer',
-    //             'expires_in' => auth()->factory()->getTTL() * 60,
-    //         ])
-    //         ->cookie('refresh_token', $refreshToken, 60 * 24 * 7, '/', null, false, true, false, 'Lax');
-    // }
-
-    // protected function respondWithToken($token)
-    // {
-    //     $refreshToken = Str::random(60);
-    //     $user = auth()->user();
-    //     $user->refresh_token = hash('sha256', $refreshToken);
-    //     $user->save();
-
-    //     return response()
-    //         ->json([
-    //             'access_token' => $token,
-    //             'token_type' => 'bearer',
-    //             'expires_in' => auth()->factory()->getTTL() * 60,
-    //         ])
-    //         ->cookie('refresh_token', $refreshToken, 60 * 24 * 7, null, null, true, true, false, 'Strict');
-    // }
-
-
-    // public function me()
-    // {
-    //     return response()->json(auth()->user());
-    // }
-
-    // public function logout(Request $request)
-    // {
-    //     $user = auth()->user();
-    //     if ($user) {
-    //         $user->refresh_token = null;
-    //         $user->save();
-    //     }
-
-    //     auth()->logout();
-
-    //     return response()
-    //         ->json(['message' => 'Successfully logged out'])
-    //         ->cookie('refresh_token', '', -1); 
-    // }
-
-    public function login()
+    public function login(Request $request)
     {
-        $credentials = request(['email', 'password']);
+        $credentials = $request->only('email', 'password');
 
         if (! $token = auth()->attempt($credentials)) {
             return response()->json(['error' => 'Unauthorized'], 401);
@@ -117,8 +22,18 @@ class AuthController extends Controller
 
         $user = auth()->user();
 
+        $refreshToken = Str::random(60);
+        DB::table('refresh_tokens')->updateOrInsert([
+            'user_id' => $user->id,
+        ], [
+            'token' => $refreshToken,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
         return response()->json([
             'access_token' => $token,
+            'refresh_token' => $refreshToken,
             'token_type' => 'bearer',
             'expires_in' => auth()->factory()->getTTL() * 60,
             'user' => $user
@@ -126,64 +41,44 @@ class AuthController extends Controller
     }
 
 
-    /**
-     * Get the authenticated User.
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
+    
     public function me()
     {
         return response()->json(auth()->user());
     }
 
-    /**
-     * Log the user out (Invalidate the token).
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function logout()
+   
+    public function logout(Request $request)
     {
         auth()->logout();
 
-        return response()->json(['message' => 'Successfully logged out']);
+        DB::table('refresh_tokens')->where('user_id', auth()->id())->delete();
+
+        return response()->json(['message' => 'Đăng xuất thành công']);
     }
 
-    /**
-     * Refresh a token.
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
-    // public function refresh()
-    // {
-    //     return $this->respondWithToken(auth()->refresh());
-    // }
+
     public function refresh(Request $request)
     {
-        try {
-            $token = $request->bearerToken();
-            if (!$token) {
-                return response()->json(['message' => 'Không tồn tại token'], 400);
-            }
-            $newToken = JWTAuth::setToken($token)->refresh();
+        $refreshToken = $request->input('refresh_token');
 
+        $row = DB::table('refresh_tokens')->where('token', $refreshToken)->first();
 
-
-            return response()->json([
-                'access_token' => $newToken,
-                'token_type' => 'bearer',
-                'expires_in' => auth()->factory()->getTTL() * 60
-            ]);
-        } catch (TokenExpiredException $e) {
-            return response()->json(['message' => 'Token expired and cannot be refreshed'], 401);
+        if (!$row) {
+            return response()->json(['message' => 'Refresh token không hợp lệ'], 401);
         }
+
+        $user = User::find($row->user_id);
+        $newAccessToken = auth()->login($user);
+
+        return response()->json([
+            'access_token' => $newAccessToken,
+            'token_type' => 'bearer',
+            'expires_in' => auth()->factory()->getTTL() * 60
+        ]);
     }
-    /**
-     * Get the token array structure.
-     *
-     * @param  string $token
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
+
+    
     protected function respondWithToken($token)
     {
         return response()->json([

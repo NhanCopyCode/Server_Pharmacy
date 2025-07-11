@@ -26,7 +26,7 @@ class PromotionController extends Controller
             $query->where('discount_type', $request->discount_type);
         }
 
-        $promotions = $query->paginate(10);
+        $promotions = $query->latest()->paginate(10);
 
         return PromotionResource::collection($promotions);
     }

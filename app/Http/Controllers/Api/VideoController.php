@@ -22,7 +22,7 @@ class VideoController extends Controller
                 ->orWhere('src', 'like', '%' . $search . '%');
         }
 
-        $videos = $query->paginate(10);
+        $videos = $query->latest()->paginate(10);
         return VideoResource::collection($videos);
     }
 

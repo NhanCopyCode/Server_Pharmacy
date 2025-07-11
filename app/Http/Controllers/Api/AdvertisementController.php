@@ -21,7 +21,7 @@ class AdvertisementController extends Controller
             $query->where('title', 'like', '%' . $search . '%');
         }
 
-        $ads = $query->paginate(10);
+        $ads = $query->latest()->paginate(10);
         return AdvertisementResource::collection($ads);
     }
 
