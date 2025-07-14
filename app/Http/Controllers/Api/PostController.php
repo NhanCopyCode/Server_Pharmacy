@@ -20,9 +20,15 @@ class PostController extends Controller
             $query->where('title', 'like', '%' . $search . '%');
         }
 
-        $posts = $query->with('user')->latest()->paginate(10);
+        if ($request->has('post_category_id') && $request->post_category_id) {
+            $query->where('post_category_id', $request->post_category_id);
+        }
+
+        $posts = $query->with(['user', 'category'])->latest()->paginate(10);
+
         return PostResource::collection($posts);
     }
+
     public function search(Request $request)
     {
         $input = $request->query('q');

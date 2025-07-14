@@ -18,6 +18,7 @@ class UpdatePostRequest extends FormRequest
             'description' => 'sometimes|required|string',
             'userId' => 'sometimes|required|exists:users,id',
             'approved' => 'nullable|boolean',
+            'post_category_id' => 'required|exists:post_categories,id',
         ];
     }
 
@@ -35,6 +36,9 @@ class UpdatePostRequest extends FormRequest
             'userId.exists' => 'Người dùng không tồn tại trong hệ thống.',
 
             'approved.boolean' => 'Trạng thái duyệt phải là true hoặc false.',
+
+            'post_category_id.required' => 'Danh mục bài viết là bắt buộc.',
+            'post_category_id.exists'   => 'Danh mục bài viết không tồn tại.',
         ];
     }
 }

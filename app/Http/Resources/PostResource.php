@@ -24,7 +24,9 @@ class PostResource extends JsonResource
             'deleted_at' => $this->deleted_at,
             'approved' => $this->approved,
             'userId' => $this->userId,
-            'userName' => $this->user->name
+            'userName' => $this->user->name,
+            'post_category_id' => $this->post_category_id,
+            'category_name' => optional($this->category)->title,
         ];
     }
 }

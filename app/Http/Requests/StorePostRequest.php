@@ -19,6 +19,7 @@ class StorePostRequest extends FormRequest
             'approved' => 'nullable|boolean',
             'userId' => 'required|exists:users,id',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'post_category_id' => 'required|exists:post_categories,id',
         ];
     }
 
@@ -40,6 +41,9 @@ class StorePostRequest extends FormRequest
             'image.image' => 'Tệp tải lên phải là ảnh.',
             'image.mimes' => 'Ảnh phải có định dạng: jpeg, png, jpg, gif, webp.',
             'image.max' => 'Ảnh không được vượt quá 2MB.',
+
+            'post_category_id.required' => 'Danh mục bài viết là bắt buộc.',
+            'post_category_id.exists'   => 'Danh mục bài viết không tồn tại.',
 
         ];
     }

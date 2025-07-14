@@ -63,6 +63,9 @@ Route::get('/products/trending', [ProductController::class, 'getProductTrending'
 Route::get('/posts/search', [PostController::class, 'search']);
 Route::get('/posts/search-multiple-posts', [PostController::class, 'searchMultiplePosts']);
 
+//Post categories
+Route::get('/post-categories/get-list-categories', [PostCategoryController::class, 'getListCategories']);
+
 //Voucher
 Route::get('/vouchers/getListApproved', [VoucherController::class, 'getListApproved']);
 

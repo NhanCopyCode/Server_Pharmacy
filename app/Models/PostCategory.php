@@ -12,7 +12,7 @@ class PostCategory extends Model
 
     protected $table = "post_categories";
 
-    protected $fillable = ['title', 'approved', 'image'];
+    protected $fillable = ['title', 'approved'];
 
     public $timestamps = true;
 }
