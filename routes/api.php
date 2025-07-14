@@ -18,6 +18,7 @@ use App\Http\Controllers\Api\PostController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\OrderItemController;
 use App\Http\Controllers\Api\PaymentController;
+use App\Http\Controllers\Api\PostCategoryController;
 use App\Http\Controllers\Api\PromotionController;
 use App\Http\Controllers\Api\VideoController;
 use App\Http\Controllers\Api\VoucherController;
@@ -46,11 +47,17 @@ Route::post('/me', [AuthController::class, 'me']);
 
 Route::post('/ai/generate-description', [AiController::class, 'generateDescription']);
 
+// Banner
+Route::get('/banners/get-banner-homepage', [BannerController::class, 'getBannerHomePage']);
+Route::get('/banners/get-banner-top', [BannerController::class, 'getBannerTop']);
+Route::get('/banners/get-banner-product-latest', [BannerController::class, 'getBannerProductLatest']);
+Route::get('/banners/get-banner-product-outstanding', [BannerController::class, 'getBannerProductOutstanding']);
+
 // Product
 Route::get('/products/search', [ProductController::class, 'search']);
 Route::get('/products/search-multiple-products', [ProductController::class, 'searchMultipleProducts']);
 Route::get('/products/latest', [ProductController::class, 'getLatest']);
-
+Route::get('/products/trending', [ProductController::class, 'getProductTrending']);
 
 //Post
 Route::get('/posts/search', [PostController::class, 'search']);
@@ -62,6 +69,7 @@ Route::get('/vouchers/getListApproved', [VoucherController::class, 'getListAppro
 //Category
 Route::get('/categories/getListApproved', [CategoryController::class, 'getListApproved']);
 Route::get('/categories/getListOutstanding', [CategoryController::class, 'getListOutstanding']);
+Route::get('/categories/getCategoryParentAndChild', [CategoryController::class, 'getCategoryParentAndChild']);
 
 // API Resources
 Route::middleware(['auth:api', 'role:admin'])->group(function () {
@@ -95,6 +103,7 @@ Route::middleware(['auth:api', 'role:admin'])->group(function () {
     Route::apiResource('discounts', DiscountController::class);
     Route::apiResource('discount-products', DiscountProductController::class);
     Route::apiResource('posts', PostController::class);
+    Route::apiResource('post-categories', PostCategoryController::class);
     Route::apiResource('orders', OrderController::class);
     Route::apiResource('order-items', OrderItemController::class);
     Route::apiResource('payments', PaymentController::class);

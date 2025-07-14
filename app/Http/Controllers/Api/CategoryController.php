@@ -97,7 +97,17 @@ class CategoryController extends Controller
         return response()->json($categories);
     }
 
+    public function getCategoryParentAndChild()
+    {
+        $categories = Category::where('parentId', 0)
+            ->where('approved', 1)
+            ->with(['children' => function ($query) {
+                $query->where('approved', 1);
+            }])
+            ->get();
 
+        return response()->json($categories);
+    }
 
     public function getParents(Request $request)
     {

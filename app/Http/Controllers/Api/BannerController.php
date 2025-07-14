@@ -21,9 +21,65 @@ class BannerController extends Controller
             $query->where('title', 'like', '%' . $search . '%');
         }
 
+        if ($request->has('position_id')) {
+            $positionId = $request->input('position_id');
+            if (!empty($positionId)) {
+                $query->where('position_id', $positionId);
+            }
+        }
+
         $banners = $query->latest()->paginate(10);
         return BannerResource::collection($banners);
     }
+
+    public function getBannerHomePage()
+    {
+        $banners = Banner::whereHas('position', function ($query) {
+            $query->where('name', 'Trang chủ');
+        })
+            ->where('approved', 1)
+            ->latest()
+            ->get();
+
+        return response()->json($banners);
+    }
+
+    public function getBannerTop()
+    {
+        $banners = Banner::whereHas('position', function ($query) {
+            $query->where('name', 'Đầu trang');
+        })
+            ->where('approved', 1)
+            ->latest()
+            ->get();
+
+        return response()->json($banners);
+    }
+
+    public function getBannerProductOutstanding()
+    {
+        $banners = Banner::whereHas('position', function ($query) {
+            $query->where('name', 'Sản phẩm nổi bật');
+        })
+            ->where('approved', 1)
+            ->latest()
+            ->get();
+
+        return response()->json($banners);
+    }
+    
+    public function getBannerProductLatest()
+    {
+        $banners = Banner::whereHas('position', function ($query) {
+            $query->where('name', 'Sản phẩm mới');
+        })
+            ->where('approved', 1)
+            ->latest()
+            ->get();
+
+        return response()->json($banners);
+    }
+
 
     public function getListApproved()
     {

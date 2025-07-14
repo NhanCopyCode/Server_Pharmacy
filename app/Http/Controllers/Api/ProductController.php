@@ -50,6 +50,16 @@ class ProductController extends Controller
         return ProductResource::collection($products);
     }
 
+    public function getProductTrending() {
+        $products = Product::where('approved', 1)
+            ->where('outstanding', 1)
+            ->orderBy('created_at', 'desc')
+            ->take(8)
+            ->get();
+
+        return ProductResource::collection($products);
+    }
+
     public function search(Request $request)
     {
         $input = $request->query('q');
