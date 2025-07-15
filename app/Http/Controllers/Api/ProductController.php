@@ -40,6 +40,27 @@ class ProductController extends Controller
         return ProductResource::collection($products);
     }
 
+    public function getProductSameSegment(Request $request)
+    {
+        $request->validate([
+            'categoryId' => 'required|integer|exists:categories,id',
+            'productId' => 'nullable|integer|exists:products,id',
+        ]);
+
+        $query = Product::query()
+            ->where('categoryId', $request->categoryId)
+            ->where('approved', 1)
+            ->with(['images', 'brand', 'category']);
+
+        if ($request->filled('productId')) {
+            $query->where('id', '!=', $request->productId);
+        }
+
+        $products = $query->latest()->take(10)->get();
+
+        return ProductResource::collection($products);
+    }
+    
     public function getLatest()
     {
         $products = Product::where('approved', 1)
@@ -50,7 +71,8 @@ class ProductController extends Controller
         return ProductResource::collection($products);
     }
 
-    public function getProductTrending() {
+    public function getProductTrending()
+    {
         $products = Product::where('approved', 1)
             ->where('outstanding', 1)
             ->orderBy('created_at', 'desc')

@@ -18,6 +18,7 @@ use App\Http\Controllers\Api\PostController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\OrderItemController;
 use App\Http\Controllers\Api\PaymentController;
+use App\Http\Controllers\Api\PolicyController;
 use App\Http\Controllers\Api\PostCategoryController;
 use App\Http\Controllers\Api\PromotionController;
 use App\Http\Controllers\Api\VideoController;
@@ -58,6 +59,7 @@ Route::get('/products/search', [ProductController::class, 'search']);
 Route::get('/products/search-multiple-products', [ProductController::class, 'searchMultipleProducts']);
 Route::get('/products/latest', [ProductController::class, 'getLatest']);
 Route::get('/products/trending', [ProductController::class, 'getProductTrending']);
+Route::get('/products/segment', [ProductController::class, 'getProductSameSegment']);
 
 //Post
 Route::get('/posts/search', [PostController::class, 'search']);
@@ -113,6 +115,7 @@ Route::middleware(['auth:api', 'role:admin'])->group(function () {
     Route::apiResource('promotions', PromotionController::class);
     Route::apiResource('vouchers', VoucherController::class);
     Route::apiResource('banners', BannerController::class);
+    Route::apiResource('policies', PolicyController::class);
     Route::apiResource('banner-positions', BannerPositionController::class);
 
 

@@ -25,6 +25,9 @@ class PromotionController extends Controller
         if ($request->filled('discount_type')) {
             $query->where('discount_type', $request->discount_type);
         }
+        if ($request->filled('applies_to')) {
+            $query->where('applies_to', $request->applies_to);
+        }
 
         $promotions = $query->latest()->paginate(10);
 

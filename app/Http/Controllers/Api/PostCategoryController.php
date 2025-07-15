@@ -26,7 +26,7 @@ class PostCategoryController extends Controller
 
     public function getListCategories()
     {
-        $categories = PostCategory::select('id', 'title')->get()->map(function ($category) {
+        $categories = PostCategory::select('id', 'title')->where('approved', 1)->get()->map(function ($category) {
             return [
                 'value' => $category->id,
                 'label' => $category->title,

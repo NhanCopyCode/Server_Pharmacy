@@ -33,7 +33,7 @@ class UpdateProductRequest extends FormRequest
             'price' => 'sometimes|required|numeric|min:0',
             'approved' => 'boolean',
             'outstanding' => 'boolean',
-            'main_image' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'main_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
 
         ];
     }
