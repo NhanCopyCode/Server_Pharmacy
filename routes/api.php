@@ -60,6 +60,8 @@ Route::get('/products/search-multiple-products', [ProductController::class, 'sea
 Route::get('/products/latest', [ProductController::class, 'getLatest']);
 Route::get('/products/trending', [ProductController::class, 'getProductTrending']);
 Route::get('/products/segment', [ProductController::class, 'getProductSameSegment']);
+Route::get('/products/all', [ProductController::class, 'getAllProductsNoPagination']);
+
 
 //Post
 Route::get('/posts/search', [PostController::class, 'search']);
@@ -78,7 +80,7 @@ Route::get('/categories/getCategoryParentAndChild', [CategoryController::class, 
 
 // API Resources
 Route::middleware(['auth:api', 'role:admin'])->group(function () {
-    
+
     Route::get('/categories/parents', [CategoryController::class, 'getParents']);
     Route::get('/categories/child', [CategoryController::class, 'getChild']);
     Route::get('/categories/childNotDeleted', [CategoryController::class, 'getChildNotDeleted']);
@@ -96,6 +98,9 @@ Route::middleware(['auth:api', 'role:admin'])->group(function () {
     // Banner positions
     Route::get('/banner-positions/banner-positions-select', [BannerPositionController::class, 'selectPositions']);
 
+    //Promotions products
+    Route::post('/promotions/promotions-products', [PromotionController::class, 'syncProducts']);
+    Route::get('/promotions/{id}/products', [PromotionController::class, 'getProducts']);
 
 
 

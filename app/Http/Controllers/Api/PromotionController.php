@@ -63,4 +63,29 @@ class PromotionController extends Controller
 
         return response()->json(['message' => 'Xóa thành công'], 200);
     }
+
+    public function syncProducts(Request $request)
+    {
+        $request->validate([
+            'promotion_id' => 'required|exists:promotions,id',
+            'product_ids' => 'required|array',
+            'product_ids.*' => 'exists:products,id',
+        ]);
+
+        $promotion = Promotion::findOrFail($request->promotion_id);
+
+        $promotion->products()->sync($request->product_ids);
+
+        return response()->json([
+            'message' => 'Cập nhật sản phẩm áp dụng khuyến mãi thành công.',
+            'promotion_id' => $promotion->id,
+            'products' => $promotion->products()->get(['id', 'title'])
+        ]);
+    }
+
+    public function getProducts($id)
+    {
+        $promotion = Promotion::with('products')->findOrFail($id);
+        return response()->json($promotion->products);
+    }
 }

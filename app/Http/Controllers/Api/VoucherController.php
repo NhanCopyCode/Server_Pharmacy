@@ -8,6 +8,7 @@ use App\Http\Requests\UpdateVoucherRequest;
 use Illuminate\Http\Request;
 use App\Models\Voucher;
 use App\Http\Resources\VoucherResource;
+use Illuminate\Support\Facades\Storage;
 
 class VoucherController extends Controller
 {
@@ -58,9 +59,17 @@ class VoucherController extends Controller
 
     public function store(StoreVoucherRequest $request)
     {
-        $voucher = Voucher::create($request->validated());
+        $data = $request->validated();
+
+        if ($request->hasFile('image')) {
+            $path = $request->file('image')->store('vouchers', 'public');
+            $data['image'] = asset('storage/' . $path);
+        }
+
+        $voucher = Voucher::create($data);
         return new VoucherResource($voucher);
     }
+
 
     public function show($id)
     {
@@ -71,7 +80,19 @@ class VoucherController extends Controller
     public function update(UpdateVoucherRequest $request, $id)
     {
         $voucher = Voucher::findOrFail($id);
-        $voucher->update($request->validated());
+        $data = $request->validated();
+
+        if ($request->hasFile('image')) {
+            if ($voucher->image) {
+                $oldPath = str_replace('storage/', '', $voucher->image);
+                Storage::disk('public')->delete($oldPath);
+            }
+
+            $path = $request->file('image')->store('vouchers', 'public');
+            $data['image'] = asset('storage/' . $path);
+        }
+
+        $voucher->update($data);
         return new VoucherResource($voucher);
     }
 

@@ -16,6 +16,7 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 
 class ProductController extends Controller
 {
+    
     public function index(Request $request)
     {
         $query = Product::query()->with(['brand', 'category']);
@@ -241,4 +242,12 @@ class ProductController extends Controller
             'errors' => $errors
         ]);
     }
+
+    public function getAllProductsNoPagination() {
+        $products = Product::where('approved', 1)->get();
+
+
+        return new ProductResource($products);
+    }
+    
 }
