@@ -4,8 +4,14 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class PromotionResource extends JsonResource
+class PromotionProductResource extends JsonResource
 {
+    /**
+     * Transform the resource into an array.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return array|\Illuminate\Contracts\Support\Arrayable|\JsonSerializable
+     */
     public function toArray($request)
     {
         return [
@@ -17,10 +23,13 @@ class PromotionResource extends JsonResource
             'max_discount_value' => $this->max_discount_value,
             'min_order_value' => $this->min_order_value,
             'applies_to' => $this->applies_to,
-            'show_on_frontend' => $this->show_on_frontend,
             'approved' => $this->approved,
             'start_date' => $this->start_date,
             'end_date' => $this->end_date,
+
+            'products' => ProductResource::collection($this->whenLoaded('products')),
+
+            'categories' => CategoryInPromotionResource::collection($this->whenLoaded('categories')),
         ];
     }
 }

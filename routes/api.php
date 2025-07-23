@@ -21,9 +21,12 @@ use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\PolicyController;
 use App\Http\Controllers\Api\PostCategoryController;
 use App\Http\Controllers\Api\PromotionController;
+use App\Http\Controllers\Api\PromotionProductController;
 use App\Http\Controllers\Api\VideoController;
 use App\Http\Controllers\Api\VoucherController;
+use App\Models\Category;
 use App\Models\ProductImage;
+use App\Models\Promotion;
 
 /*
 |--------------------------------------------------------------------------
@@ -62,6 +65,13 @@ Route::get('/products/trending', [ProductController::class, 'getProductTrending'
 Route::get('/products/segment', [ProductController::class, 'getProductSameSegment']);
 Route::get('/products/all', [ProductController::class, 'getAllProductsNoPagination']);
 
+// Promotions
+Route::get('/promotions/all', [PromotionController::class, 'getAllPromotionsNoPagination']);
+Route::get('/promotions/available', [PromotionController::class, 'getPromotionAvailable']);
+Route::post('/promotions/sync-products', [PromotionController::class, 'syncProductsAndCategories']);
+
+// Promotions products
+Route::get("/promotions-products/get-promotions-and-products", [PromotionProductController::class, 'getPromotionsAndProducts']);
 
 //Post
 Route::get('/posts/search', [PostController::class, 'search']);
@@ -69,6 +79,7 @@ Route::get('/posts/search-multiple-posts', [PostController::class, 'searchMultip
 
 //Post categories
 Route::get('/post-categories/get-list-categories', [PostCategoryController::class, 'getListCategories']);
+Route::get('/post-categories/all', [PostCategoryController::class, 'getAllPostCategoriesNoPagination'] );
 
 //Voucher
 Route::get('/vouchers/getListApproved', [VoucherController::class, 'getListApproved']);
@@ -77,6 +88,10 @@ Route::get('/vouchers/getListApproved', [VoucherController::class, 'getListAppro
 Route::get('/categories/getListApproved', [CategoryController::class, 'getListApproved']);
 Route::get('/categories/getListOutstanding', [CategoryController::class, 'getListOutstanding']);
 Route::get('/categories/getCategoryParentAndChild', [CategoryController::class, 'getCategoryParentAndChild']);
+Route::get('/categories/available', [CategoryController::class, 'getAvailableCategories']);
+
+// Policies
+Route::get('/policies/getAll', [PolicyController::class, 'getAllPolicies']);
 
 // API Resources
 Route::middleware(['auth:api', 'role:admin'])->group(function () {
@@ -118,7 +133,7 @@ Route::middleware(['auth:api', 'role:admin'])->group(function () {
     Route::apiResource('order-items', OrderItemController::class);
     Route::apiResource('payments', PaymentController::class);
     Route::apiResource('promotions', PromotionController::class);
-    Route::apiResource('vouchers', VoucherController::class);
+    Route::apiResource('promotions-products', PromotionProductController::class);
     Route::apiResource('banners', BannerController::class);
     Route::apiResource('policies', PolicyController::class);
     Route::apiResource('banner-positions', BannerPositionController::class);

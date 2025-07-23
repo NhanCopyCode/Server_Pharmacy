@@ -87,4 +87,11 @@ class PostCategoryController extends Controller
         $category->delete();
         return response()->json(['message' => 'Đã xóa thành công'], 204);
     }
+
+    public function getAllPostCategoriesNoPagination() 
+    {
+        $post_categories = PostCategory::where('approved', 1)->get();
+
+        return PostCategoryResource::collection($post_categories);
+    }
 }

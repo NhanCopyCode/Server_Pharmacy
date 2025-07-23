@@ -74,4 +74,11 @@ class PolicyController extends Controller
 
         return response()->json(['message' => 'Deleted successfully'], 204);
     }
+
+    public function getAllPolicies()
+    {
+        $policies = Policy::all();
+
+        return PolicyResource::collection($policies);
+    }
 }

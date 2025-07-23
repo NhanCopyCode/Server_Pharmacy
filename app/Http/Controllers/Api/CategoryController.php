@@ -195,4 +195,38 @@ class CategoryController extends Controller
         $category->delete();
         return response()->json(['message' => 'Deleted successfully'], 204);
     }
+    public function getAvailableCategories()
+    {
+        $parents = Category::where('approved', 1)
+            ->whereNull('deleted_at')
+            ->where('parentId', 0) 
+            ->with(['children' => function ($query) {
+                $query->where('approved', 1)
+                    ->whereNull('deleted_at')
+                    ->with('parent');
+            }])
+            ->get();
+
+        $nested = $parents->map(function ($parent) {
+            return [
+                'id' => $parent->id,
+                'name' => $parent->name,
+                'image' => $parent->image,
+                'outstanding' => $parent->outstanding,
+                'approved' => $parent->approved,
+                'children' => $parent->children->map(function ($child) {
+                    return [
+                        'id' => $child->id,
+                        'name' => $child->name,
+                        'image' => $child->image,
+                        'outstanding' => $child->outstanding,
+                        'parentName' => $child->parent ? $child->parent->name : null,
+                        'approved' => $child->approved,
+                    ];
+                }),
+            ];  
+        });
+
+        return response()->json($nested);
+    }
 }

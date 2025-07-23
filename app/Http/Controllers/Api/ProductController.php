@@ -246,8 +246,7 @@ class ProductController extends Controller
     public function getAllProductsNoPagination() {
         $products = Product::where('approved', 1)->get();
 
-
-        return new ProductResource($products);
+        return ProductResource::collection($products);
     }
     
 }

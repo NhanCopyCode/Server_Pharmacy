@@ -14,6 +14,7 @@ class Promotion extends Model
         'max_discount_value',
         'min_order_value',
         'applies_to',
+        'show_on_frontend',
         'approved',
         'start_date',
         'end_date'

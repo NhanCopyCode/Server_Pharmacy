@@ -4,16 +4,19 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StorePromotionRequest;
+use App\Http\Requests\SyncPromotionProductsRequest;
 use App\Http\Requests\UpdatePromotionRequest;
+use App\Http\Resources\PromotionProductResource;
 use App\Http\Resources\PromotionResource;
+use App\Models\Product;
 use App\Models\Promotion;
 use Illuminate\Http\Request;
 
-class PromotionController extends Controller
+class PromotionProductController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Promotion::query();
+        $query = Promotion::with('products', 'categories');
 
         if ($request->filled('search')) {
             $query->where(function ($q) use ($request) {
@@ -22,16 +25,9 @@ class PromotionController extends Controller
             });
         }
 
-        if ($request->filled('discount_type')) {
-            $query->where('discount_type', $request->discount_type);
-        }
-        if ($request->filled('applies_to')) {
-            $query->where('applies_to', $request->applies_to);
-        }
+        $promotions_products = $query->latest()->paginate(10);
 
-        $promotions = $query->latest()->paginate(10);
-
-        return PromotionResource::collection($promotions);
+        return PromotionProductResource::collection($promotions_products);
     }
 
 
@@ -39,30 +35,78 @@ class PromotionController extends Controller
     {
         $promotion = Promotion::create($request->validated());
 
-        return new PromotionResource($promotion);
+        $productIdsFromRequest = $request->input('product_ids', []);
+        $categoryIds = $request->input('category_ids', []);
+
+        $productIdsFromCategories = [];
+        if (!empty($categoryIds)) {
+            $productIdsFromCategories = \App\Models\Product::whereIn('categoryId', $categoryIds)
+                ->pluck('id')
+                ->toArray();
+        }
+
+        $allProductIds = collect($productIdsFromRequest)
+            ->merge($productIdsFromCategories)
+            ->unique()
+            ->values()
+            ->toArray();
+
+        $promotion->products()->sync($allProductIds);
+        $promotion->categories()->sync($categoryIds);
+
+        return new PromotionProductResource(
+            $promotion->load(['products', 'categories'])
+        );
     }
+
 
     public function show($id)
     {
-        $promotion = Promotion::findOrFail($id);
-        return new PromotionResource($promotion);
+        $promotion = Promotion::with(['products', 'categories'])->findOrFail($id);
+        return new PromotionProductResource($promotion);
     }
 
-    public function update(UpdatePromotionRequest $request, $id)
+    public function update(SyncPromotionProductsRequest $request, $id)
     {
         $promotion = Promotion::findOrFail($id);
+
         $promotion->update($request->validated());
 
-        return new PromotionResource($promotion);
+        $productIdsFromRequest = $request->input('product_ids', []);
+        $categoryIds = $request->input('category_ids', []);
+
+        $productIdsFromCategories = [];
+        if (!empty($categoryIds)) {
+            $productIdsFromCategories = \App\Models\Product::whereIn('categoryId', $categoryIds)
+                ->pluck('id')
+                ->toArray();
+        }
+
+        $allProductIds = collect($productIdsFromRequest)
+            ->merge($productIdsFromCategories)
+            ->unique()
+            ->values()
+            ->toArray();
+
+        $promotion->products()->sync($allProductIds);
+        $promotion->categories()->sync($categoryIds);
+
+        return new PromotionProductResource(
+            $promotion->load(['products', 'categories'])
+        );
     }
+
 
     public function destroy($id)
     {
         $promotion = Promotion::findOrFail($id);
+        $promotion->products()->detach();
+        $promotion->categories()->detach();
         $promotion->delete();
 
-        return response()->json(['message' => 'Xóa thành công'], 200);
+        return response()->json(['message' => 'Xóa khuyến mãi thành công.']);
     }
+
 
     public function syncProductsAndCategories(Request $request)
     {
@@ -133,5 +177,24 @@ class PromotionController extends Controller
             ->get();
 
         return PromotionResource::collection($promotions);
+    }
+
+    public function getPromotionsAndProducts()
+    {
+        $products = Product::whereHas('promotions', function ($query) {
+            $query->where('approved', 1)
+                ->where('start_date', '<=', now())
+                ->where('end_date', '>=', now());
+        })
+            ->with(['promotions' => function ($q) {
+                $q->where('approved', 1)
+                    ->where('start_date', '<=', now())
+                    ->where('end_date', '>=', now())
+                    ->with('categories');
+            }])
+            ->take(5)
+            ->get();
+
+        return response()->json($products);
     }
 }

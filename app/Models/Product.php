@@ -59,4 +59,9 @@ class Product extends Model
     {
         return $this->belongsToMany(TargetAudience::class, 'product_target_audience');
     }
+
+    public function promotions()
+    {
+        return $this->belongsToMany(Promotion::class, 'promotion_product', 'product_id', 'promotion_id');
+    }
 }
