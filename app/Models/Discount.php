@@ -20,4 +20,9 @@ class Discount extends Model
     {
         return $this->belongsToMany(Product::class, 'discount_product', 'discountId', 'productId');
     }
+
+    public function getListApproved()
+    {
+        return self::where()
+    }
 }

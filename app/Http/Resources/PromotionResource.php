@@ -21,6 +21,7 @@ class PromotionResource extends JsonResource
             'approved' => $this->approved,
             'start_date' => $this->start_date,
             'end_date' => $this->end_date,
+            'products' => ProductResource::collection($this->whenLoaded('products')),
         ];
     }
 }

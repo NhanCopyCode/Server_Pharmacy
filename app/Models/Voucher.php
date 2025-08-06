@@ -35,4 +35,9 @@ class Voucher extends Model
     {
         return $this->belongsToMany(Product::class, 'voucher_product');
     }
+
+    public static function getListApproved()
+    {
+        return self::where('approved', 1)->get();
+    }
 }

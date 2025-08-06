@@ -64,4 +64,14 @@ class Product extends Model
     {
         return $this->belongsToMany(Promotion::class, 'promotion_product', 'product_id', 'promotion_id');
     }
+
+    // In app/Models/Product.php
+
+    public static function getLatest($limit = 5)
+    {
+        return self::where('approved', 1)
+            ->orderBy('created_at', 'desc')
+            ->take($limit)
+            ->get();
+    }
 }

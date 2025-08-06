@@ -34,4 +34,17 @@ class Promotion extends Model
     {
         return $this->hasMany(PromotionLog::class);
     }
+
+    public static function getPromotionShowOnFrontend()
+    {
+        return self::where('approved', 1)
+            ->where('show_on_frontend', 1)
+            ->where('start_date', '<=', now())
+            ->where('end_date', '>=', now())
+            ->with(['products' => function ($query) {
+                $query->orderBy('created_at', 'desc')->take(10);
+            }])
+            ->take(10)
+            ->get();
+    }
 }

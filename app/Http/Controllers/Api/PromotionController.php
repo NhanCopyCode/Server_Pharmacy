@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StorePromotionRequest;
 use App\Http\Requests\UpdatePromotionRequest;
+use App\Http\Resources\ProductResource;
 use App\Http\Resources\PromotionResource;
+use App\Models\Product;
 use App\Models\Promotion;
 use Illuminate\Http\Request;
 
@@ -125,11 +127,17 @@ class PromotionController extends Controller
         return PromotionResource::collection($promotions);
     }
 
-    public function getPromotionAvailable()
+    public function getPromotionsWithProductsForFrontend()
     {
         $promotions = Promotion::where('approved', 1)
+            ->where('show_on_frontend', 1)
             ->where('start_date', '<=', now())
             ->where('end_date', '>=', now())
+            ->with(['products' => function ($query) {
+                $query->orderBy('created_at', 'desc')->take(10);
+            }])
+            ->orderBy('start_date', 'asc')
+            ->take(10)
             ->get();
 
         return PromotionResource::collection($promotions);

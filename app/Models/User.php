@@ -22,6 +22,8 @@ class User extends Authenticatable implements JWTSubject
         'address',
         'roleId',
         'refresh_token',
+        'social_provider',
+        'social_id',
     ];
 
     protected $casts = [

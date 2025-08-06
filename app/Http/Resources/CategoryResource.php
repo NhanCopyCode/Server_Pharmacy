@@ -22,6 +22,7 @@ class CategoryResource extends JsonResource
             'approved' => $this->approved,
             'outstanding' => $this->outstanding,
             'parentName' => $this->parent ? $this->parent->name : null,
+            'position' => $this->getPositionName(),
         ];
     }
 }

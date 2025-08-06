@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\RegisterRequest;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -41,13 +42,39 @@ class AuthController extends Controller
     }
 
 
-    
+    public function register(RegisterRequest $request)
+    {
+        $refreshToken = Str::random(60); 
+
+        $user = User::create([
+            'surname' => $request->surname,
+            'name' => $request->name,
+            'email' => $request->email,
+            'phoneNumber' => $request->phoneNumber,
+            'password' => bcrypt($request->password),
+            'address' => $request->address,
+            'roleId' => $request->roleId ?? 2,
+            'refresh_token' => $refreshToken, 
+        ]);
+
+        $token = auth()->login($user);
+
+        return response()->json([
+            'access_token' => $token,
+            'refresh_token' => $refreshToken,
+            'token_type' => 'bearer',
+            'expires_in' => auth()->factory()->getTTL() * 60,
+            'user' => $user,
+        ]);
+    }
+
+
     public function me()
     {
         return response()->json(auth()->user());
     }
 
-   
+
     public function logout(Request $request)
     {
         auth()->logout();
@@ -78,7 +105,7 @@ class AuthController extends Controller
         ]);
     }
 
-    
+
     protected function respondWithToken($token)
     {
         return response()->json([

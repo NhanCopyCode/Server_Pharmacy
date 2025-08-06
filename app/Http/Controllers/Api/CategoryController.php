@@ -18,7 +18,6 @@ class CategoryController extends Controller
 
         if ($request->filled('search')) {
             $search = $request->input('search');
-
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', '%' . $search . '%');
             });
@@ -29,13 +28,19 @@ class CategoryController extends Controller
             $query->where('parentId', 0);
         }
 
-        $parents = $query->with('children')->latest()->paginate(10);
+        if ($request->filled('position')) {
+            $position = $request->input('position');
+            $query->whereHas('positions', function ($q) use ($position) {
+                $q->where('position', $position);
+            });
+        }
+
+        $parents = $query->with(['children.positions', 'positions'])->latest()->paginate(10);
 
         $listParents = Category::where('parentId', 0)->get()->map(function ($parent) {
             return [
                 'value' => $parent->id,
                 'label' => $parent->name,
-
             ];
         });
 
@@ -46,6 +51,7 @@ class CategoryController extends Controller
                 'image' => $parent->image,
                 'outstanding' => $parent->outstanding,
                 'approved' => $parent->approved,
+                'positions' => $parent->positions->pluck('position')->implode(', '),
                 'children' => $parent->children->map(function ($child) {
                     return [
                         'id' => $child->id,
@@ -54,6 +60,7 @@ class CategoryController extends Controller
                         'outstanding' => $child->outstanding,
                         'parentName' => $child->parent ? $child->parent->name : null,
                         'approved' => $child->approved,
+                        'positions' => $child->positions->pluck('position')->implode(', '),
                     ];
                 }),
             ];
@@ -81,6 +88,8 @@ class CategoryController extends Controller
         ]);
     }
 
+
+
     public function getListApproved()
     {
         $categories = Category::where('approved', 1)->get();
@@ -97,17 +106,24 @@ class CategoryController extends Controller
         return response()->json($categories);
     }
 
-    public function getCategoryParentAndChild()
+    public function getCategoryParentAndChildHeader()
     {
         $categories = Category::where('parentId', 0)
             ->where('approved', 1)
+            ->whereHas('positions', function ($q) {
+                $q->where('position', 'header');
+            })
             ->with(['children' => function ($query) {
-                $query->where('approved', 1);
+                $query->where('approved', 1)
+                    ->whereHas('positions', function ($q) {
+                        $q->where('position', 'header');
+                    });
             }])
             ->get();
 
         return response()->json($categories);
     }
+
 
     public function getParents(Request $request)
     {
@@ -199,7 +215,7 @@ class CategoryController extends Controller
     {
         $parents = Category::where('approved', 1)
             ->whereNull('deleted_at')
-            ->where('parentId', 0) 
+            ->where('parentId', 0)
             ->with(['children' => function ($query) {
                 $query->where('approved', 1)
                     ->whereNull('deleted_at')
@@ -224,7 +240,7 @@ class CategoryController extends Controller
                         'approved' => $child->approved,
                     ];
                 }),
-            ];  
+            ];
         });
 
         return response()->json($nested);

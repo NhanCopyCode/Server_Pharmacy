@@ -248,5 +248,28 @@ class ProductController extends Controller
 
         return ProductResource::collection($products);
     }
+
+    public function getAllProductsByIds(Request $request) {
+        $ids = $request->query('ids');
+
+        if (empty($ids)) {
+            return response()->json(['message' => 'No product IDs provided'], 400);
+        }
+
+        $productIds = explode(',', $ids);
+        $products = Product::whereIn('id', $productIds)->where('approved', 1)->get();
+
+        return ProductResource::collection($products);
+
+    }
+
+    public function getById(Request $request)
+    {
+        $id = $request->id;
+
+        $product = Product::where('id', $id)->get();
+
+        return ProductResource::collection($product);
+    }
     
 }
