@@ -47,7 +47,7 @@ class HomeController extends Controller
         $posts_nutrition = Post::with(['category:id,title,approved,created_at,updated_at,deleted_at'])
             ->where('post_category_id', 1)
             ->where('approved', 1)
-            ->select('id', 'title', 'approved', 'created_at', 'updated_at', 'deleted_at', 'post_category_id')
+            ->select('id', 'title', 'approved', 'description', 'image', 'created_at', 'updated_at', 'deleted_at', 'post_category_id')
             ->orderBy('created_at', 'desc')
             ->take(5)
             ->get();
@@ -56,7 +56,7 @@ class HomeController extends Controller
         $posts_beautiful_young = Post::with(['category:id,title,approved,created_at,updated_at,deleted_at'])
             ->where('post_category_id', 2)
             ->where('approved', 1)
-            ->select('id', 'title', 'approved', 'created_at', 'updated_at', 'deleted_at', 'post_category_id')
+            ->select('id', 'title', 'approved', 'description', 'image', 'created_at', 'updated_at', 'deleted_at', 'post_category_id')
             ->orderBy('created_at', 'desc')
             ->take(4)
             ->get();
