@@ -31,6 +31,37 @@ class HomeController extends Controller
         $videos = Video::where('approved', 1)->get();
         $posts_nutrition = Post::where('post_category_id', 1)->where('approved', 1)->take(5)->get();
         $post_beautiful_young = Post::where('post_category_id', 2)->where('approved', 1)->take(4)->get();
+        $banners_outstanding = Banner::whereHas('position', function ($query) {
+            $query->where('name', 'Sản phẩm nổi bật');
+        })
+            ->where('approved', 1)
+            ->latest()
+            ->get();
+        $products_trending = Product::where('approved', 1)
+            ->where('outstanding', 1)
+            ->orderBy('created_at', 'desc')
+            ->take(8)
+            ->get();
+
+        // Góc dinh dưỡng
+        $posts_nutrition = Post::with(['category:id,title,approved,created_at,updated_at,deleted_at'])
+            ->where('post_category_id', 1)
+            ->where('approved', 1)
+            ->select('id', 'title', 'approved', 'created_at', 'updated_at', 'deleted_at', 'post_category_id')
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get();
+
+        // Góc trẻ đẹp
+        $posts_beautiful_young = Post::with(['category:id,title,approved,created_at,updated_at,deleted_at'])
+            ->where('post_category_id', 2)
+            ->where('approved', 1)
+            ->select('id', 'title', 'approved', 'created_at', 'updated_at', 'deleted_at', 'post_category_id')
+            ->orderBy('created_at', 'desc')
+            ->take(4)
+            ->get();
+
+
         return response()->json([
             'banners_homepage' => $banners_homepage,
             'categories_outstanding' => $categories_outstanding,
@@ -41,7 +72,10 @@ class HomeController extends Controller
             'policies' => $policies,
             'videos' => $videos,
             'posts_nutrition' => $posts_nutrition,
-            'post_beautiful_young' => $post_beautiful_young,
+            'banners_outstanding' => $banners_outstanding,
+            'products_trending' => $products_trending,
+            'posts_beautiful_young' => $posts_beautiful_young,
+            'posts_nutrition' => $posts_nutrition
         ]);
     }
 
@@ -66,7 +100,7 @@ class HomeController extends Controller
                     });
             }])
             ->get();
-        $post_category = PostCategory::where('approved' , 1)->get();
+        $post_category = PostCategory::where('approved', 1)->get();
         $posts_header = Post::where('approved', 1)->orderBy('created_at', 'desc')->take(5)->get();
         return response()->json([
             'banners_top' => $banners_top,
